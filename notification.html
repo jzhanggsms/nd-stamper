@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Segoe UI, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 16px;
+    }
+    .box {
+      text-align: center;
+      padding: 20px 24px;
+      border-radius: 6px;
+      width: 100%;
+    }
+    .box.success { background: #e6f4ea; border: 1px solid #a8d5b5; }
+    .box.error   { background: #fdecea; border: 1px solid #f5c2be; }
+    .icon { font-size: 28px; margin-bottom: 8px; }
+    .title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .detail { font-size: 12px; color: #555; }
+  </style>
+</head>
+<body>
+  <div id="content"></div>
+  <script>
+    var params = new URLSearchParams(window.location.search);
+    var msg    = params.get("msg");
+    var text   = params.get("text") || "";
+    var el     = document.getElementById("content");
+
+    if (msg === "not-nd") {
+      el.innerHTML = [
+        '<div class="box error">',
+        '  <div class="icon">⚠️</div>',
+        '  <div class="title">Not a NetDocuments document</div>',
+        '  <div class="detail">Open this document from NetDocuments to stamp it.</div>',
+        '</div>'
+      ].join("");
+    } else if (msg === "stamped") {
+      el.innerHTML = [
+        '<div class="box success">',
+        '  <div class="icon">✅</div>',
+        '  <div class="title">Stamp applied</div>',
+        '  <div class="detail">' + text + '</div>',
+        '</div>'
+      ].join("");
+    }
+  </script>
+</body>
+</html>
