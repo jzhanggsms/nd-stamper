@@ -34,11 +34,7 @@
     xsi:type="VersionOverridesV1_0">
 
     <Hosts>
-      <Host xsi:type="Document">
-        <DesktopFormFactor>
-          <FunctionFile resid="Commands.Url"/>
-        </DesktopFormFactor>
-      </Host>
+      <Host xsi:type="Document"/>
     </Hosts>
 
     <Resources>
@@ -65,20 +61,15 @@
       <Hosts>
         <Host xsi:type="Document">
           <DesktopFormFactor>
-
-            <!-- Runtimes is required for event-based add-ins -->
             <Runtimes>
               <Runtime resid="Commands.Url" lifetime="short"/>
             </Runtimes>
-
             <FunctionFile resid="Commands.Url"/>
-
             <ExtensionPoint xsi:type="LaunchEvent">
               <LaunchEvents>
                 <LaunchEvent Type="OnDocumentBeforeSave" FunctionName="onDocumentBeforeSave"/>
               </LaunchEvents>
             </ExtensionPoint>
-
           </DesktopFormFactor>
         </Host>
       </Hosts>
