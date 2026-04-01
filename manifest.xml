@@ -12,14 +12,14 @@
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="ND Doc Stamper"/>
   <Description DefaultValue="Stamps NetDocuments doc number and version on save"/>
-  <SupportUrl DefaultValue="https://YOUR-SERVER/support"/>
+  <SupportUrl DefaultValue="https://jzhanggsms.github.io/nd-stamper/support"/>
 
   <AppDomains>
-    <AppDomain>https://YOUR-SERVER</AppDomain>
+    <AppDomain>https://jzhanggsms.github.io</AppDomain>
   </AppDomains>
   <Hosts><Host Name="Document"/></Hosts>
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://YOUR-SERVER/taskpane.html"/>
+    <SourceLocation DefaultValue="https://jzhanggsms.github.io/nd-stamper/taskpane.html"/>
   </DefaultSettings>
   <Permissions>ReadWriteDocument</Permissions>
 
@@ -35,7 +35,7 @@
     </Hosts>
     <Resources>
       <bt:Urls>
-        <bt:Url id="Commands.Url" DefaultValue="https://YOUR-SERVER/commands.html"/>
+        <bt:Url id="Commands.Url" DefaultValue="https://jzhanggsms.github.io/nd-stamper/commands.html"/>
       </bt:Urls>
     </Resources>
 
@@ -56,7 +56,7 @@
       </Hosts>
       <Resources>
         <bt:Urls>
-          <bt:Url id="Commands.Url" DefaultValue="https://YOUR-SERVER/commands.html"/>
+          <bt:Url id="Commands.Url" DefaultValue="https://jzhanggsms.github.io/nd-stamper/commands.html"/>
         </bt:Urls>
       </Resources>
     </VersionOverrides>
