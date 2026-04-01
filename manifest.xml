@@ -65,12 +65,20 @@
       <Hosts>
         <Host xsi:type="Document">
           <DesktopFormFactor>
+
+            <!-- Runtimes is required for event-based add-ins -->
+            <Runtimes>
+              <Runtime resid="Commands.Url" lifetime="short"/>
+            </Runtimes>
+
             <FunctionFile resid="Commands.Url"/>
+
             <ExtensionPoint xsi:type="LaunchEvent">
               <LaunchEvents>
                 <LaunchEvent Type="OnDocumentBeforeSave" FunctionName="onDocumentBeforeSave"/>
               </LaunchEvents>
             </ExtensionPoint>
+
           </DesktopFormFactor>
         </Host>
       </Hosts>
