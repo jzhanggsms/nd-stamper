@@ -1,15 +1,18 @@
 // ============================================================
 // ND Doc Stamper — commands.js
 //
-// Two entry points:
-//   onDocumentBeforeSave — fires automatically on every save
-//   stampNow             — fires when user clicks ribbon button
+// Stamps doc number + version and today's date into the
+// primary footer on every save.
+//
+// Footer layout:
+//   Line 1 — left empty for Word's built-in page number
+//   Line 2 — doc number + version  (bold, 8pt)
+//   Line 3 — today's date          (italic, 8pt)
 // ============================================================
 
 var ND_PROPS = {
-  docNumber:  ["NDDocumentNumber", "ND_ID",     "NDDocNum",     "_ND_ID"],
-  version:    ["NDVersion",        "ND_VER",    "NDDocVersion"],
-  subVersion: ["NDSubVersion",     "ND_SUBVER", "NDSubVer"]
+  docNumber: ["ndDocumentId", "NDDocID"],
+  docIDFull: ["NDDocID"]
 };
 
 var STAMP_BOOKMARK = "NDDocStamp";
@@ -27,14 +30,20 @@ function findProp(props, keys) {
 }
 
 function buildStamp(props) {
-  var docNumber  = findProp(props, ND_PROPS.docNumber);
+  var docNumber = findProp(props, ND_PROPS.docNumber);
   if (!docNumber) return null;
 
-  var version    = findProp(props, ND_PROPS.version);
-  var subVersion = findProp(props, ND_PROPS.subVersion);
+  var fullID   = findProp(props, ND_PROPS.docIDFull) || "";
+  var verMatch = fullID.match(/v[\d.]+$/i);
+  var vStr     = verMatch ? (". " + verMatch[0]) : "";
 
-  var vStr = version ? (". v" + version + (subVersion ? ("." + subVersion) : "")) : "";
   return docNumber + vStr;
+}
+
+function getTodayStr() {
+  return new Date().toLocaleDateString("en-US", {
+    year: "numeric", month: "short", day: "numeric"
+  });
 }
 
 function showDialog(url) {
@@ -44,7 +53,6 @@ function showDialog(url) {
     function(result) {
       if (result.status === Office.AsyncResultStatus.Succeeded) {
         var dialog = result.value;
-        // Auto-close after 3 seconds
         setTimeout(function() { dialog.close(); }, 3000);
       }
     }
@@ -66,18 +74,23 @@ async function runStamp(event, isManual) {
       var props = {};
       customProps.items.forEach(function(p) { props[p.key] = p.value; });
 
-      // 2. Build stamp — bail if not an ND doc
+      // 2. Build stamp text — bail if not an ND doc
       var stampText = buildStamp(props);
       if (!stampText) {
         if (isManual) {
-          // Show "not a NetDocuments document" message to user
           showDialog(NOTIFICATION_URL + "?msg=not-nd");
         }
         event.completed();
         return;
       }
 
-      // 3. Check for existing stamp bookmark
+      var dateText = getTodayStr();
+
+      // 3. Get the primary footer of the first section
+      var footer = ctx.document.sections.getFirst().getFooter("primary");
+      var footerBody = footer.body;
+
+      // 4. Check for existing stamp bookmark
       var bookmarks = ctx.document.bookmarks;
       bookmarks.load("items");
       await ctx.sync();
@@ -91,37 +104,43 @@ async function runStamp(event, isManual) {
       }
 
       if (existing) {
-        // UPDATE — overwrite with fresh stamp text
+        // UPDATE — replace bookmarked range with fresh stamp + date
         var bmRange = existing.getRange();
-        bmRange.insertText(stampText, "Replace");
+        bmRange.insertText(stampText + "\n" + dateText, "Replace");
         await ctx.sync();
 
       } else {
-        // INSERT — first stamp on this document
-        var body = ctx.document.body;
-        var endRange = body.getRange("End");
+        // INSERT — build footer stamp for the first time
+        // Footer already has one empty paragraph — leave it for page number.
+        // Append stamp and date after it.
 
-        var sep = endRange.insertParagraph("----------------------------------------", "Before");
-        sep.font.size = 8;
-        sep.font.color = "#AAAAAA";
-        sep.spaceBefore = 12;
-        sep.spaceAfter = 0;
+        // Line 2: doc number + version
+        var p1 = footerBody.insertParagraph(stampText, "End");
+        p1.font.size = 8;
+        p1.font.bold = true;
+        p1.font.color = "#555555";
+        p1.alignment = Word.Alignment.left;
+        p1.spaceAfter = 0;
+        p1.spaceBefore = 0;
 
-        var p = endRange.insertParagraph(stampText, "Before");
-        p.font.size = 8;
-        p.font.color = "#555555";
-        p.font.bold = true;
-        p.spaceAfter = 0;
-        p.spaceBefore = 0;
+        // Line 3: today's date
+        var p2 = footerBody.insertParagraph(dateText, "End");
+        p2.font.size = 8;
+        p2.font.italic = true;
+        p2.font.color = "#555555";
+        p2.alignment = Word.Alignment.left;
+        p2.spaceAfter = 0;
+        p2.spaceBefore = 0;
 
         await ctx.sync();
 
-        var stampRange = p.getRange();
+        // Bookmark spans both lines for future updates
+        var stampRange = p1.getRange();
+        stampRange.expandTo(p2.getRange());
         stampRange.insertBookmark(STAMP_BOOKMARK);
         await ctx.sync();
       }
 
-      // Show success notification if manually triggered
       if (isManual) {
         showDialog(NOTIFICATION_URL + "?msg=stamped&text=" + encodeURIComponent(stampText));
       }
@@ -142,7 +161,7 @@ async function onDocumentBeforeSave(event) {
 }
 
 // -----------------------------------------------------------
-// Entry point 2 — ribbon button "Stamp ND Info"
+// Entry point 2 — ribbon button
 // -----------------------------------------------------------
 async function stampNow(event) {
   await runStamp(event, true);
